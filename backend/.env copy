@@ -1,0 +1,8 @@
+module.exports = {
+    authSecret: '@!@$%¨&*()&%#$@SDFGHIUOYTDSF75572',
+    db:{
+    database: 'nomedobd',
+    user:     'postgres',
+    password: 'senha'
+  }
+}

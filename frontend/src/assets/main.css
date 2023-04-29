@@ -1,0 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap');
+
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    font-size: 62.5%; /*1rem = 10px*/
+}
+
+body{
+    background-color: #E7E7E7;
+}
+
+.whiteBox{
+    border-radius: 5px;
+    box-shadow: 0px 4px 4px 1px #00000025;
+    background-color: #f9f9f9;
+    font-family: Lato;
+    padding: 1rem;
+}
+
+.inputText{
+    border-radius: 0.5rem;
+    border: solid white 1px;
+    background-color: #EEEEEE;
+    box-shadow: inset 0rem 0.1rem 0.5rem 0.2rem rgb(0, 0, 0, 0.25);
+    height: 4rem;
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    font-size: 1.6rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+.inputText:focus {
+    outline: 0;
+}
+
+.inputButton {
+    min-width: 3rem;
+    min-height: 4rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background-image: linear-gradient(#F6F6F6, #E7E3E3);
+    font-size: 2.4rem;
+    font-family: 'Inter', sans-serif;
+    border: solid 1px #969393;
+    cursor: pointer;
+}
+.inputButton:active {
+    background-image: linear-gradient(#E7E3E3, #F6F6F6);
+}
+
+.purpleButton {
+    margin: 10px;
+    min-width: 3rem;
+    min-height: 5rem;
+    padding: 0 2rem 0.5rem 2rem;
+    border-radius: 1rem;
+    background-image: linear-gradient(#D852B2, #9C4483);
+    box-shadow: 0rem 0.1rem 0.4rem 0rem rgb(0, 0, 0, 0.25);
+    font-size: 3rem;
+    font-family: Lato;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+.purpleButton:active {
+    background-image: linear-gradient(#9C4483, #D852B2);
+}
+
+.inputText{
+    border-radius: 0.5rem;
+    border: solid white 1px;
+    background-color: #EEEEEE;
+    box-shadow: inset 0rem 0.1rem 0.5rem 0.2rem rgb(0, 0, 0, 0.25);
+    height: 4rem;
+    width: 100%;
+    padding: 0.8rem 1.2rem;
+    font-size: 1.6rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+.inputText:focus {
+    outline: 0;
+}
+
+.inputButton {
+    min-width: 3rem;
+    min-height: 4rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    background-image: linear-gradient(#F6F6F6, #E7E3E3);
+    font-size: 2.4rem;
+    font-family: 'Inter', sans-serif;
+    border: solid 1px #969393;
+    cursor: pointer;
+}
+.inputButton:active {
+    background-image: linear-gradient(#E7E3E3, #F6F6F6);
+}
+
+.purpleButton {
+    margin: 10px;
+    min-width: 3rem;
+    min-height: 5rem;
+    padding: 0 2rem 0.5rem 2rem;
+    border-radius: 1rem;
+    background-image: linear-gradient(#D852B2, #9C4483);
+    box-shadow: 0rem 0.1rem 0.4rem 0rem rgb(0, 0, 0, 0.25);
+    font-size: 3rem;
+    font-family: Lato;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+.purpleButton:active {
+    background-image: linear-gradient(#9C4483, #D852B2);
+}
+
+.col{
+    display: flex;
+    flex-direction: column;
+}
+.row{
+    display: flex;
+    flex-direction: row;
+}
+.center{
+    display: flex;
+    justify-content: center;
+}
