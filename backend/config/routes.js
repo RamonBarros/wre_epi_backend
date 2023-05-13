@@ -5,6 +5,7 @@ module.exports = app =>{
     app.post('/signin', app.api.auth.signin)
     app.post('/validateToken', app.api.auth.validateToken)
 
+
     //por estar usando consign nao é necessario usar o require de user
     //ao acessar a rota /user chamará a função save
     app.route('/users')
@@ -63,4 +64,15 @@ module.exports = app =>{
     app.route('/categories/:id/products')
         //.all(app.config.passport.authenticate())
         .get(app.api.product.getByCategory)
+
+    app.route('/credCard-payment')
+        //.all(app.config.passport.authenticate())
+        .post(app.api.pagseguro.credCardPayment)
+    
+    app.route('/bankSlip-payment')
+        //.all(app.config.passport.authenticate())
+        .post(app.api.pagseguro.bankSlipPayment)
+    app.route('/pix-payment')
+        //.all(app.config.passport.authenticate())
+        .post(app.api.pagseguro.pixPayment)
 }
