@@ -145,7 +145,7 @@ module.exports = app =>{
                     "amount": {
                         "value": 500
                     },
-                    "expiration_date": "2023-05-29T20:15:59-03:00",
+                    "expiration_date": "2023-06-29T20:15:59-03:00",
                 }
             ],
             "shipping": {
@@ -189,7 +189,101 @@ module.exports = app =>{
 
     }
 
+    const orderConsult = (req,res) => {
+    //     const axios = require('axios');
 
-    return {credCardPayment,bankSlipPayment,pixPayment}
+    //     const data = JSON.stringify({
+    //         "order_id":"7E186C1F6691455CB36691CA5C13F99C"
+    //     });
+        
+    //     const config = {
+    //         method: 'get',
+    //         // url: 'https://sandbox.api.pagseguro.com/orders/7E186C1F6691455CB36691CA5C13F99C',
+    //         url: 'https://sandbox.api.pagseguro.com/charges/5C5752A9F834417E8DE66F63DA5E836C',
+    //         headers: { 
+    //             'Authorization': '7945392F1AEF4AA289264B8BBAF19E46', 
+    //             'Content-Type': 'application/json'
+    //         }
+    //         };
+
+        
+    //    // const url = 'https://sandbox.api.pagseguro.com/orders/7E186C1F6691455CB36691CA5C13F99C'; // Substitua pela URL correta
+    //     //const tokenApi = '{{token_api}}'; // Substitua pelo token de autenticação correto
+
+    //     axios.get(config)
+    //     .then(response => console.log(response.data))
+    //     .catch(error => console.error(error));
+
+        let axios = require('axios');
+
+        let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: 'https://sandbox.api.pagseguro.com/orders/CHAR_7E186C1F-6691-455C-B36691CA5C13F99C',
+        headers: { 
+            'Authorization': 'Bearer 7945392F1AEF4AA289264B8BBAF19E46', 
+            'Content-Type': 'application/json'
+        }
+        };
+        
+        axios(config)
+        .then(function (response) {
+        console.log(JSON.stringify(response.data));
+        })
+        .catch(function (error) {
+        console.log(error);
+        });
+    
+
+    }
+
+    const chargeConsult = (req,res) => {
+
+        const axios = require('axios');
+
+        const config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: 'https://sandbox.api.pagseguro.com/charges/7E186C1F6691455CB36691CA5C13F99C',
+        headers: { 
+            'Authorization': 'Bearer 7945392F1AEF4AA289264B8BBAF19E46', 
+            'Content-Type': 'application/json',
+            'x-api-version': '4.0'
+        }
+        };
+
+        
+        axios(config)
+        .then(function (response) {
+        console.log(JSON.stringify(response.data));
+        })
+        .catch(function (error) {
+        console.log(error);
+        });
+    
+    }
+
+    const cancelCharge= (req,res)=>{
+        const axios = require('axios');
+
+        const options = {
+        method: 'POST',
+        url: 'https://sandbox.api.pagseguro.com/charges/5C5752A9F834417E8DE66F63DA5E836C/cancel',
+        headers: {'Authorization': '7945392F1AEF4AA289264B8BBAF19E46', 
+        'Content-Type': 'application/json', 
+        'x-api-version': '4.0'}
+        };
+
+        axios
+        .request(options)
+        .then(function (response) {
+            console.log(response.data);
+        })
+        .catch(function (error) {
+            console.error(error);
+        });
+    }
+
+    return {credCardPayment,bankSlipPayment,pixPayment,orderConsult,cancelCharge,chargeConsult}
 
 }

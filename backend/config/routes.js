@@ -61,9 +61,9 @@ module.exports = app =>{
         .put(app.api.product.save)
         .delete(app.api.product.remove)
 
-    app.route('/categories/:id/products')
+    app.route('/categories/:id/products-cart')
         //.all(app.config.passport.authenticate())
-        .get(app.api.product.getByCategory)
+        .get(app.api.product.getByCategoryCart)
 
     app.route('/credCard-payment')
         //.all(app.config.passport.authenticate())
@@ -75,4 +75,13 @@ module.exports = app =>{
     app.route('/pix-payment')
         //.all(app.config.passport.authenticate())
         .post(app.api.pagseguro.pixPayment)
+    app.route('/order-consult')
+        //.all(app.config.passport.authenticate())
+        .get(app.api.pagseguro.orderConsult)
+    app.route('/charge-consult')
+        //.all(app.config.passport.authenticate())
+        .get(app.api.pagseguro.chargeConsult)
+    app.route('/cancel-charge')
+        //.all(app.config.passport.authenticate())
+        .get(app.api.pagseguro.cancelCharge)
 }

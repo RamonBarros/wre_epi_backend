@@ -57,26 +57,24 @@ module.exports = app => {
             .catch(err =>res.status(500).send(err))
     }
 
-    const getById = (req,res) => {
+    const getById = async (req,res) => {
         app.db('products')
             .where({id: req.params.id})
-            .first()
-            .then(product => {
-                product.content = product.content.toString()
-                return res.json(product)
-            })
+            .then(product => product = res.json(product))
             .catch(err => res.status(500).send(err))
     }
 
-    const getByCategory = async (req,res) => {
+    const getByCategoryCart = async (req,res) => {
         const categoryId = req.params.id
         
         app.db('products')
-            .select('name','imageUrl','price')
+            .select('name','imageUrl','price','id')
             .where({categoryId:categoryId})
             .then(products => res.json(products))
             .catch(err => res.status(500).send(err)) 
 
-    }
-    return {save, remove, get, getById, getByCategory}
+    } 
+
+   
+    return {save, remove, get, getById, getByCategoryCart}
 }
