@@ -38,7 +38,7 @@ module.exports = app => {
         try{
             const rowsDeleted = await app.db('user_address')
                 .where({id: req.params.id}).del()
-            existsOrError(rowsDeleted,'Produto Não Foi Encontrado.')
+            existsOrError(rowsDeleted,'Endereço Não Foi Encontrado.')
 
             res.status(200).send()
         }catch(msg){
@@ -68,15 +68,5 @@ module.exports = app => {
             .catch(err => res.status(500).send(err))
     }
 
-    const getByCategory = async (req,res) => {
-        const categoryId = req.params.id
-        
-        app.db('user_address')
-            .select('name','imageUrl','price')
-            .where({categoryId:categoryId})
-            .then(user_address => res.json(user_address))
-            .catch(err => res.status(500).send(err)) 
-
-    }
-    return {save, remove, get, getById, getByCategory}
+    return {save, remove, get, getById}
 }

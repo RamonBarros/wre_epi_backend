@@ -50,6 +50,17 @@ module.exports = app =>{
         .get(app.api.category.getById)
         .delete(app.api.category.remove)
     
+    app.route('/cart')
+        //.all(app.config.passport.authenticate())
+        .get(app.api.cart.get)
+        .post(app.api.cart.save)
+
+    app.route('/cart/:id')
+        //.all(app.config.passport.authenticate())
+        .get(app.api.cart.getById)
+        .put(app.api.cart.save)
+        .delete(app.api.cart.remove)
+        
     app.route('/products')
         //.all(app.config.passport.authenticate())
         .get(app.api.product.get)
