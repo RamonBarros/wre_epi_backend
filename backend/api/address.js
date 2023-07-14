@@ -3,6 +3,7 @@ module.exports = app => {
 
     const save = (req,res) => {
         const address = {...req.body}
+        console.log(address)
         if(req.params.id){
             address.id = req.params.id
         }
@@ -19,18 +20,27 @@ module.exports = app => {
             existsOrError(address.userId, 'Id do usuario Não Informado')
         }catch(msg){
             res.status(400).send(msg)
+            return;
         }
+
         if(address.id){
             app.db('user_address')
                 .update(address)
                 .where({id: address.id})
                 .then(_=> res.status(200).send())
-                .catch(err=> res.status(500).send(err))
+                .catch(err => {
+                    console.error(err);
+                    return res.status(500).send('Erro ao atualizar o endereço');
+                  });
+
         } else{
             app.db('user_address')
                 .insert(address)
                 .then(_=> res.status(200).send())
-                .catch(err=> res.status(500).send(err))
+                .catch(err => {
+                    console.error(err);
+                    return res.status(500).send('Erro ao criar o endereço');
+                  });
         }
     }
 
@@ -68,5 +78,18 @@ module.exports = app => {
             .catch(err => res.status(500).send(err))
     }
 
-    return {save, remove, get, getById}
+    const getByClientId = (req,res) => {
+        console.log(req.params.userId)
+
+        app.db('user_address')
+            .where({ userId: req.params.userId})
+            .first()
+            .then(address => {
+                console.log("entrou")
+                return res.json(address)
+            })
+            .catch(err => res.status(500).send(err))
+    }
+
+    return {save, remove, get, getById, getByClientId}
 }

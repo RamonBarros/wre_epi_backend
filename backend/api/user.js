@@ -88,7 +88,7 @@ module.exports = app =>{
     
     const getById = (req, res) => {
         app.db('users')
-            .select('id','name','email','admin')
+            .select('id','name','email','admin','cpf','empresa','telefone')
             .where({id: req.params.id})
             .first()
             .then(users =>res.json(users))
@@ -159,13 +159,13 @@ module.exports = app =>{
             if(!userFromDB){
                 res.status(404).json({error: 'E-mail não cadastrado'})
             } else{
-                const resetLink = jwt.sign({user:user.email},
+                const token = jwt.sign({user:user.email},
                     authSecret,{expiresIn: '10m'})
-        
+                    
                     // //Atualiza o Token do usuario
                     await app.db('users')
                         .where({id: userFromDB.id})
-                        .update({resetLink})
+                        .update({resetLink:token})
                         
                         //sendEmail(user,resetLink)
 
@@ -182,9 +182,9 @@ module.exports = app =>{
                           from: "noreplay@gmail.com", // your email
                           to: user.email,
                           subject: "Solicitação de troca de senha",
-                          html:'<p> Click <a href="http://localhost:3000/forgot-password/'+resetLink+'">'+resetLink+'</a> to reset password<p/>'
+                          html:'<p> Click <a href="http://localhost:8080/change-password/'+token+'">'+token+'</a> to reset password<p/>'
                 
-                         //html: '<p>Click <a href="http://localhost:3000/sessions/recover/' + recovery_token + '">here</a> to reset your password</p>'
+                         //html:'<p> Click <a href="http://localhost:3000/forgot-password/'+resetLink+'">'+resetLink+'</a> to reset password<p/>'
                 
                          // I'm only going to use an (a tag) to make this easier to
                          // understand but feel free to add any email templates 
@@ -208,26 +208,24 @@ module.exports = app =>{
     }
 
     const validateResetPasswordToken = async (req,res) => {
-        const resetLink=req.params.token
-        const newPassword = req.body
-
-        existsOrError(resetLink,'Token Não Informado')
+        const token=req.params.token
+        const newPassword = req.body    
+        existsOrError(token,'Token Não Informado')
 
         try {
-
-            const decoded=jwt.verify(resetLink,authSecret)
-            
-            //verifica se já existe um usuario com o email cadastrado(O email deve ser único)
+            const decoded=jwt.verify(token,authSecret)
+            console.log(decoded)
+            //verifica se já existe um usuario com o Token
             const userFromDB= await app.db('users')
-                .where({resetLink}).first()
-            
+                .where({resetLink:token}).first()
+            console.log("verificado")
             //verifica se existe um usuario com o token
             //caso não exista retorna um erro informando 
             existsOrError(userFromDB,'Link Inválido')
 
-            const hashPassword = bcrypt.hashSync(newPassword.password,8)
+            console.log(newPassword)
+            const hashPassword = bcrypt.hashSync(newPassword.newPassword,8)
             newPassword.password = hashPassword
-
             //Atualiza a senha do usuario
 
             const updatedCredentials = {
@@ -239,9 +237,12 @@ module.exports = app =>{
                 .where({id: userFromDB.id})
                 .then(_=>res.status(204).json({message: 'Senha Alterada'}))
                 .catch(err=>res.status(500).send(err))
+
+                console.log("vai até o final")
             
         } catch (msg) {
             //caso encontre algum erro retorna o status 500 e uma mensagem
+            console.log(msg)
             return res.status(500).send(msg)
         }
     }
