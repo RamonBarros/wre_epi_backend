@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const { json } = require('body-parser');
 const baseApiUrl = "http://localhost:3000"
+const  axios = require ('axios')
 
 module.exports = app =>{
     //Importa as funções de validação de dados de validation.js
@@ -70,6 +71,8 @@ module.exports = app =>{
                 //Caso não encontre retorna o status 204 (deu certo)
         }else{
             //Caso não tenha sido informado o id do usuario faz a inserção do usuario
+            //mas antes cria o client_id da api do asaas
+            user.asaas_client_id = await createNewAsaasClient(user.name, user.cpf);
             app.db('users')
                 .insert(user)
                 .then(_=>res.status(204).send())
@@ -94,7 +97,7 @@ module.exports = app =>{
             .then(users =>res.json(users))
             .catch(err=>res.status(500).send(err))
     
-        }
+    }
     const getByEmail = (email) => {
         return app.db('users')
             .select('id','name','email','admin')
@@ -103,41 +106,6 @@ module.exports = app =>{
             .then(users =>res.json(users))
             .catch(err=>res.status(500).send(err))
          
-    }
-
-    function sendEmail(user, token) {
-
-    //     const transporter = nodemailer.createTransport({
-    //         service: 'gmail',
-    //         auth: {
-    //             user: 'ramonbarrosgomes1@gmail.com',
-    //             pass: 'lkctrrzpzainbwcl',
-    //         },
-    //     });
-        
-        
-    //     var msg = {
-    //       from: "noreplay@gmail.com", // your email
-    //       to: user.email,
-    //       subject: "Solicitação de troca de senha",
-    //       html:'<p> Click <a href="http://localhost:3000/forgot-password/'+token+'">'+token+'</a> to reset password<p/>'
-
-    //      //html: '<p>Click <a href="http://localhost:3000/sessions/recover/' + recovery_token + '">here</a> to reset your password</p>'
-
-    //      // I'm only going to use an (a tag) to make this easier to
-    //      // understand but feel free to add any email templates 
-    //      // in the `html` property
-    //     };
-        
-    //     transporter.sendMail(msg,function(err){
-    //         if (err) return res.status(400).json({
-    //             erro: true,
-    //             message:"Erro:E-mail não enviado!"})
-    //     })
-    //   return res.json({
-    //     erro:false,
-    //     message:"Email Enviado com sucesso!"
-    //   })
     }
 
 
@@ -247,5 +215,36 @@ module.exports = app =>{
         }
     }
 
-    return {save,get,getById,resetPassword, validateResetPasswordToken}
+    const createNewAsaasClient = async (clientName, clientCpfCnpj) => {
+        try {
+            const options = {
+                method: 'POST',
+                url: 'https://sandbox.asaas.com/api/v3/customers',
+                headers: {
+                    accept: 'application/json',
+                    'content-type': 'application/json',
+                    access_token: '$aact_YTU5YTE0M2M2N2I4MTliNzk0YTI5N2U5MzdjNWZmNDQ6OjAwMDAwMDAwMDAwMDAwNjc0NjI6OiRhYWNoXzZlMWYxMjlhLWU5MDYtNDQ0NS1hZmU3LTE4ZWY3YzExZDJiOA=='
+                },
+                data: {
+                    name: clientName,
+                    cpfCnpj: clientCpfCnpj,
+                }
+            };
+            console.log(clientName,clientCpfCnpj)
+    
+            const response = await axios.request(options);
+            const clientId = response.data.id; // Obtendo o campo 'id' da resposta
+
+            console.log(clientId)
+    
+            // Enviando apenas o campo 'id' na resposta JSON
+            return clientId 
+
+        } catch (error) {
+            console.error(error);
+           throw new Error('Erro interno do servidor');
+        }
+    };
+
+    return {save,get,getById,resetPassword, validateResetPasswordToken, createNewAsaasClient}
 }

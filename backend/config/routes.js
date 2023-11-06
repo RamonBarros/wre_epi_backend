@@ -62,8 +62,15 @@ module.exports = app =>{
         
     app.route('/cart/:client_id')
         //.all(app.config.passport.authenticate())
-        .get(app.api.cart.getByClientId) 
+        .post(app.api.cart.save)
+        .get(app.api.cart.getByClientId)
+
+    app.route('/cart/count/:client_id')
+        //.all(app.config.passport.authenticate())
+        .get(app.api.cart.getCountByClientId)
+
     app.route('/cart/update')
+        //.all(app.config.passport.authenticate())
         .put(app.api.cart.save)
         
     app.route('/products')
@@ -83,21 +90,27 @@ module.exports = app =>{
 
     app.route('/credCard-payment')
         //.all(app.config.passport.authenticate())
-        .post(app.api.pagseguro.credCardPayment)
+        .post(app.api.asaas.credCardPayment)
+   
+    app.route('/client-id/:cpfCNPJ')
+       //.all(app.config.passport.authenticate())
+       .get(app.api.asaas.getAsaasClientId)
     
     app.route('/bankSlip-payment')
         //.all(app.config.passport.authenticate())
-        .post(app.api.pagseguro.bankSlipPayment)
+        .post(app.api.asaas.bankSlipPayment)
+
     app.route('/pix-payment')
         //.all(app.config.passport.authenticate())
-        .post(app.api.pagseguro.pixPayment)
-    app.route('/order-consult')
-        //.all(app.config.passport.authenticate())
-        .get(app.api.pagseguro.orderConsult)
-    app.route('/charge-consult')
-        //.all(app.config.passport.authenticate())
-        .get(app.api.pagseguro.chargeConsult)
-    app.route('/cancel-charge')
-        //.all(app.config.passport.authenticate())
-        .get(app.api.pagseguro.cancelCharge)
+        .post(app.api.asaas.pixPayment)
+        
+    // app.route('/order-consult')
+    //     //.all(app.config.passport.authenticate())
+    //     .get(app.api.asaas.orderConsult)
+    // app.route('/charge-consult')
+    //     //.all(app.config.passport.authenticate())
+    //     .get(app.api.asaas.chargeConsult)
+    // app.route('/cancel-charge')
+    //     //.all(app.config.passport.authenticate())
+    //     .get(app.api.asaas.cancelCharge)
 }

@@ -6,6 +6,8 @@ module.exports = app =>{
       if (req.params.client_id) {
         cart_item.client_id = req.params.client_id;
       }
+
+      console.log(cart_item)
     
       try {
         existsOrError(cart_item.product_id, 'Id do Produto Não Informado');
@@ -67,6 +69,19 @@ module.exports = app =>{
           res.status(500).send(err);
         }
       };
+
+      const getCountByClientId = async (client_id) => {
+        try {
+          const count = await app.db('cart_items')
+            .count()
+            .where('client_id', client_id)
+            .first();
+      
+          return count;
+        } catch (error) {
+          throw error;
+        }
+      };
       
       
     const getById = async (req, res) => {
@@ -115,5 +130,5 @@ module.exports = app =>{
       }
     };
 
-    return {save,remove,get,getById,getByClientId}
+    return {save,remove,get,getById,getByClientId,getCountByClientId}
 }

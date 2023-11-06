@@ -52,7 +52,7 @@ module.exports = app => {
         const count = parseInt(result.count)
 
         app.db('products')
-            .select('id','name', 'imageUrl')
+            .select('id','name', 'imageUrl','stock')
             .then(products => res.json(products))
             .catch(err =>res.status(500).send(err))
     }
