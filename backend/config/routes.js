@@ -5,6 +5,7 @@ module.exports = app =>{
     app.post('/signin', app.api.auth.signin)
     app.post('/validateToken', app.api.auth.validateToken)
 
+    
 
     //por estar usando consign nao é necessario usar o require de user
     //ao acessar a rota /user chamará a função save
@@ -103,6 +104,10 @@ module.exports = app =>{
     app.route('/pix-payment')
         //.all(app.config.passport.authenticate())
         .post(app.api.asaas.pixPayment)
+   
+    app.route('/payment-update')
+        //.all(app.config.passport.authenticate())
+        .post(app.api.webHooks.paymentUpdate)
         
     // app.route('/order-consult')
     //     //.all(app.config.passport.authenticate())

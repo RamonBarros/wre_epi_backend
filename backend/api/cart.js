@@ -119,10 +119,7 @@ module.exports = app =>{
           .where({ client_id: req.params.client_id })
           .select('cart_items.*', 'products.name', 'products.imageUrl', 'products.price')
           .join('products', 'cart_items.product_id', 'products.id');
-    
-        if (cartItems.length === 0) {
-          return res.status(404).json({ error: 'Não Existe Carrinho de Compras Com o client_id Fornecido' });
-        }
+
     
         res.json(cartItems);
       } catch (error) {

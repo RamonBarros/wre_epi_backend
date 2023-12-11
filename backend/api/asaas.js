@@ -1,6 +1,7 @@
 module.exports = app => {
     const axios = require('axios');
     const moment = require('moment');
+    const { paymentApiKey } = require('../.env')
 
 
     const credCardPayment = async (req, res) => {
@@ -8,7 +9,7 @@ module.exports = app => {
         const dueDate = moment().format('YYYY-MM-DD');
         let holderInfo, holderAddressInfo;
         try {
-            
+
             try {
                 holderInfo = await getUserData(infos.cpfCnpj)
                 try {
@@ -19,7 +20,7 @@ module.exports = app => {
             } catch (error) {
                 console.error(error.message)
             }
-            
+
             const options = {
 
                 method: 'POST',
@@ -27,7 +28,7 @@ module.exports = app => {
                 headers: {
                     accept: 'application/json',
                     'content-type': 'application/json',
-                    access_token: '$aact_YTU5YTE0M2M2N2I4MTliNzk0YTI5N2U5MzdjNWZmNDQ6OjAwMDAwMDAwMDAwMDAwNjc0NjI6OiRhYWNoXzZlMWYxMjlhLWU5MDYtNDQ0NS1hZmU3LTE4ZWY3YzExZDJiOA=='
+                    access_token: paymentApiKey
                 },
                 data: {
                     billingType: 'CREDIT_CARD',
@@ -55,8 +56,8 @@ module.exports = app => {
                 }
             };
 
-            
-            
+
+
             const response = await axios.request(options);
             console.log(response.data);
             res.json(response.data);
@@ -72,9 +73,9 @@ module.exports = app => {
         try {
             const data_user = await app.db('users')
                 .select('email', 'telefone', 'id')
-                .where({ cpf: cpfCnpj})
+                .where({ cpf: cpfCnpj })
                 .first();
-    
+
             if (data_user) {
                 return data_user;
             } else {
@@ -89,9 +90,9 @@ module.exports = app => {
         try {
             const data_user = await app.db('user_address')
                 .select('number', 'zipCode')
-                .where({ userId: user_id})
+                .where({ userId: user_id })
                 .first();
-    
+
             if (data_user) {
                 return data_user;
             } else {
@@ -101,14 +102,14 @@ module.exports = app => {
             throw error;
         }
     };
-    
-    
-    
+
+
+
 
     const bankSlipPayment = async (req, res) => {
         const infos = { ...req.body }
-        const dueDate = moment().add(3,'days').format('YYYY-MM-DD');
-        console.log(infos,dueDate)
+        const dueDate = moment().add(3, 'days').format('YYYY-MM-DD');
+        console.log(infos, dueDate)
         try {
             const options = {
 
@@ -117,7 +118,7 @@ module.exports = app => {
                 headers: {
                     accept: 'application/json',
                     'content-type': 'application/json',
-                    access_token: '$aact_YTU5YTE0M2M2N2I4MTliNzk0YTI5N2U5MzdjNWZmNDQ6OjAwMDAwMDAwMDAwMDAwNjc0NjI6OiRhYWNoXzZlMWYxMjlhLWU5MDYtNDQ0NS1hZmU3LTE4ZWY3YzExZDJiOA=='
+                    access_token: paymentApiKey
                 },
                 data: {
                     billingType: 'BOLETO',
@@ -130,7 +131,71 @@ module.exports = app => {
 
             const response = await axios.request(options);
             console.log(response.data);
-            res.json(response.data);
+            res.json(response.data.invoiceUrl);
+
+            let paymentData={
+                external_id: response.data.id,
+                status: response.data.status,
+                totalValue: response.data.value,
+                type: response.data.billingType
+            }
+        
+            
+            const orderData = {
+                external_id: response.data.id,
+                client_id: infos.client_id,
+                status: response.data.status,
+                total: response.data.value,
+                order_date: response.data.dateCreated
+                //O certo é utilizar o status da api de frete: enviado, entregue, em transito e etc. E o external_id deve ser o id do pedido de frete da api de frete
+            }
+            
+            console.log(orderData);
+
+            let orderItems = await app
+                .db('cart_items')
+                .select('product_id', 'quantity')
+                .where({ client_id: infos.client_id });
+
+                console.log(orderItems);
+
+            const orderId = await app.db('order')
+                .insert(orderData)
+                .returning('id')
+                .then(async (orderId) => {
+                    console.log(orderId[0].id);
+
+                    orderItems = orderItems.map((orderItem) => {
+                        orderItem.order_id = orderId[0].id;
+                        return orderItem;  // Retorne o orderItem modificado
+                    });
+                    
+                    paymentData.order_id = orderId[0].id;
+
+
+
+                    console.log(orderItems);
+
+                    // Use o método insert para inserir múltiplos registros
+                    await app.db('order_items').insert(orderItems);
+                    await app.db('payments').insert(paymentData);
+
+                });
+
+                //RESETA O CARRINHO DE COMPRA APÓS CONFIRMAR O PEDIDO
+
+            // try {
+            //     await app.db('cart_items')
+            //         .where({ client_id: infos.client_id })
+            //         .delete();
+
+            //     console.log('Itens do carrinho excluídos com sucesso.');
+            // } catch (error) {
+            //     console.error('Erro ao excluir itens do carrinho:', error);
+            //     // Lide com o erro de acordo com seus requisitos
+            // }
+
+
             // Salvar o id da cobrança response.data.id , poderá ser utilizado caso seja necessario o estorno da cobrança, é necessario alterar o banco de dados para permitir salvar este campo.
             // Salvar o link do boleto, também é possivel pagar o boleto via pix, o campo é o invoiceUrl
         } catch (error) {
@@ -144,7 +209,7 @@ module.exports = app => {
         try {
             const dueDate = moment().format('YYYY-MM-DD');
             const infos = { ...req.body }
-            console.log(infos,dueDate)
+            console.log(infos, dueDate)
             const options = {
 
                 method: 'POST',
@@ -152,7 +217,7 @@ module.exports = app => {
                 headers: {
                     accept: 'application/json',
                     'content-type': 'application/json',
-                    access_token: '$aact_YTU5YTE0M2M2N2I4MTliNzk0YTI5N2U5MzdjNWZmNDQ6OjAwMDAwMDAwMDAwMDAwNjc0NjI6OiRhYWNoXzZlMWYxMjlhLWU5MDYtNDQ0NS1hZmU3LTE4ZWY3YzExZDJiOA=='
+                    access_token: paymentApiKey
                 },
                 data: {
                     billingType: 'PIX',
@@ -165,9 +230,69 @@ module.exports = app => {
 
             const response = await axios.request(options);
             console.log(response.data);
-            res.json(response.data);
-            // Salvar o id da cobrança response.data.id , poderá ser utilizado caso seja necessario o estorno da cobrança, é necessario alterar o banco de dados para permitir salvar este campo.
-            // Salvar o link de pagamento do pix, o campo é o invoiceUrl
+            console.log(response.data.invoiceUrl);
+            res.json(response.data.invoiceUrl);
+
+            let paymentData={
+                external_id: response.data.id,
+                status: response.data.status,
+                totalValue: response.data.value,
+                type: response.data.billingType
+            }
+            
+            const orderData = {
+                external_id: response.data.id,
+                client_id: infos.client_id,
+                status: response.data.status,
+                total: response.data.value,
+                order_date: response.data.dateCreated
+                //O certo é utilizar o status da api de frete: enviado, entregue, em transito e etc. E o external_id deve ser o id do pedido de frete da api de frete
+            }
+            
+            console.log(orderData);
+
+            let orderItems = await app
+                .db('cart_items')
+                .select('product_id', 'quantity')
+                .where({ client_id: infos.client_id });
+
+            const orderId = await app.db('order')
+                .insert(orderData)
+                .returning('id')
+                .then(async (orderId) => {
+                    console.log(orderId[0].id);
+
+                    orderItems = orderItems.map((orderItem) => {
+                        orderItem.order_id = orderId[0].id;
+                        return orderItem;  // Retorne o orderItem modificado
+                    });
+                    
+                    paymentData.order_id = orderId[0].id;
+
+
+
+                    console.log(orderItems);
+
+                    // Use o método insert para inserir múltiplos registros
+                    await app.db('order_items').insert(orderItems);
+                    await app.db('payments').insert(paymentData);
+
+                });
+
+                //RESETA O CARRINHO DE COMPRA APÓS CONFIRMAR O PEDIDO
+
+            // try {
+            //     await app.db('cart_items')
+            //         .where({ client_id: infos.client_id })
+            //         .delete();
+
+            //     console.log('Itens do carrinho excluídos com sucesso.');
+            // } catch (error) {
+            //     console.error('Erro ao excluir itens do carrinho:', error);
+            //     // Lide com o erro de acordo com seus requisitos
+            // }
+
+
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Erro interno do servidor' });
@@ -183,7 +308,47 @@ module.exports = app => {
                 url: 'https://sandbox.asaas.com/api/v3/payments?customer=id_client',
                 headers: {
                     accept: 'application/json',
-                    access_token: '$aact_YTU5YTE0M2M2N2I4MTliNzk0YTI5N2U5MzdjNWZmNDQ6OjAwMDAwMDAwMDAwMDAwNjc0NjI6OiRhYWNoXzZlMWYxMjlhLWU5MDYtNDQ0NS1hZmU3LTE4ZWY3YzExZDJiOA=='
+                    access_token: paymentApiKey
+                }
+            };
+            //Será utilizado o cliente_id salvo no banco de dados ao criar o novo cliente
+            const response = await axios.request(options);
+            console.log(response.data);
+            res.json(response.data);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Erro interno do servidor' });
+        }
+    }
+
+    const paymentQrCode = async (req, res) => {
+        try {
+            const options = {
+                method: 'GET',
+                url: 'https://sandbox.asaas.com/api/v3/payments/id/pixQrCode',
+                headers: {
+                    accept: 'application/json',
+                    access_token: paymentApiKey
+                }
+            };
+            //Será utilizado o cliente_id salvo no banco de dados ao criar o novo cliente
+            const response = await axios.request(options);
+            console.log(response.data);
+            res.json(response.data);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Erro interno do servidor' });
+        }
+    }
+
+    const bankSlipLink = async (req, res) => {
+        try {
+            const options = {
+                method: 'GET',
+                url: 'https://sandbox.asaas.com/api/v3/payments/id/pixQrCode',
+                headers: {
+                    accept: 'application/json',
+                    access_token: paymentApiKey
                 }
             };
             //Será utilizado o cliente_id salvo no banco de dados ao criar o novo cliente
@@ -205,7 +370,7 @@ module.exports = app => {
                 headers: {
                     accept: 'application/json',
                     'content-type': 'application/json',
-                    access_token: '$aact_YTU5YTE0M2M2N2I4MTliNzk0YTI5N2U5MzdjNWZmNDQ6OjAwMDAwMDAwMDAwMDAwNjc0NjI6OiRhYWNoXzZlMWYxMjlhLWU5MDYtNDQ0NS1hZmU3LTE4ZWY3YzExZDJiOA=='
+                    access_token: paymentApiKey
                 },
                 data: { description: 'Motivo do estorno' }//adicionar o value:valor do estorno, no data, caso não seja estornado o valor inteiro.
             };
@@ -231,7 +396,7 @@ module.exports = app => {
                 url: 'https://sandbox.asaas.com/api/v3/customers?cpfCnpj=' + cpfCNPJ + '&offset=0&limit=1',
                 headers: {
                     accept: 'application/json',
-                    access_token: '$aact_YTU5YTE0M2M2N2I4MTliNzk0YTI5N2U5MzdjNWZmNDQ6OjAwMDAwMDAwMDAwMDAwNjc0NjI6OiRhYWNoXzZlMWYxMjlhLWU5MDYtNDQ0NS1hZmU3LTE4ZWY3YzExZDJiOA=='
+                    access_token: paymentApiKey
                 }
             };
             axios
@@ -253,5 +418,5 @@ module.exports = app => {
 
 
 
-    return { credCardPayment, bankSlipPayment, pixPayment, listBill, returnPayment, getAsaasClientId }
+    return { credCardPayment, bankSlipPayment, pixPayment, listBill, returnPayment, getAsaasClientId, paymentQrCode, bankSlipLink }
 }
