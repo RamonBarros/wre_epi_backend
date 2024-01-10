@@ -1,7 +1,7 @@
 module.exports = app => {
     const axios = require('axios');
     const moment = require('moment');
-    const { paymentApiKey } = require('../.env')
+    const { asaasPaymentApiKey } = require('../.env')
 
 
     const credCardPayment = async (req, res) => {
@@ -19,7 +19,7 @@ module.exports = app => {
                 }
             } catch (error) {
                 console.error(error.message)
-            }
+            } 
 
             const options = {
 
@@ -28,7 +28,7 @@ module.exports = app => {
                 headers: {
                     accept: 'application/json',
                     'content-type': 'application/json',
-                    access_token: paymentApiKey
+                    access_token: asaasPaymentApiKey
                 },
                 data: {
                     billingType: 'CREDIT_CARD',
@@ -56,11 +56,70 @@ module.exports = app => {
                 }
             };
 
-
-
             const response = await axios.request(options);
             console.log(response.data);
-            res.json(response.data);
+
+            res.json(response.data.invoiceUrl);
+
+            let paymentData={
+                external_id: response.data.id,
+                status: response.data.status,
+                totalValue: infos.installmentCount*infos.installmentValue,
+                type: response.data.billingType
+            }
+        
+            
+            const orderData = {
+                external_id: response.data.id,
+                client_id: infos.client_id,
+                status: response.data.status,
+                total: infos.installmentCount*infos.installmentValue,
+                order_date: response.data.dateCreated
+                //O certo é utilizar o status da api de frete: enviado, entregue, em transito e etc. E o external_id deve ser o id do pedido de frete da api de frete
+            }
+            
+            console.log(orderData);
+
+            let orderItems = await app.db('cart_items')
+                .select('product_id', 'quantity')
+                .where({ client_id: infos.client_id });
+
+                console.log(orderItems);
+
+            const orderId = await app.db('order')
+                .insert(orderData)
+                .returning('id')
+                .then(async (orderId) => {
+                    console.log(orderId[0].id);
+
+                    orderItems = orderItems.map((orderItem) => {
+                        orderItem.order_id = orderId[0].id;
+                        return orderItem;  
+                    });
+                    
+                    paymentData.order_id = orderId[0].id;
+
+
+
+                    console.log(orderItems);
+
+                    // Use o método insert para inserir múltiplos registros
+                    await app.db('order_items').insert(orderItems);
+                    await app.db('payments').insert(paymentData);
+
+                });
+
+                //RESETA O CARRINHO DE COMPRA APÓS CONFIRMAR O PEDIDO
+
+            // try {
+            //     await app.db('cart_items')
+            //         .where({ client_id: infos.client_id })
+            //         .delete();
+
+            //     console.log('Itens do carrinho excluídos com sucesso.');
+            // } catch (error) {
+            //     console.error('Erro ao excluir itens do carrinho:', error);
+            // }
 
             // Salvar o id da cobrança response.data.id , poderá ser utilizado caso seja necessario o estorno da cobrança, é necessario alterar o banco de dados para permitir salvar este campo.
         } catch (error) {
@@ -104,8 +163,6 @@ module.exports = app => {
     };
 
 
-
-
     const bankSlipPayment = async (req, res) => {
         const infos = { ...req.body }
         const dueDate = moment().add(3, 'days').format('YYYY-MM-DD');
@@ -118,7 +175,7 @@ module.exports = app => {
                 headers: {
                     accept: 'application/json',
                     'content-type': 'application/json',
-                    access_token: paymentApiKey
+                    access_token: asaasPaymentApiKey
                 },
                 data: {
                     billingType: 'BOLETO',
@@ -136,7 +193,7 @@ module.exports = app => {
             let paymentData={
                 external_id: response.data.id,
                 status: response.data.status,
-                totalValue: response.data.value,
+                totalValue: response.data.value, 
                 type: response.data.billingType
             }
         
@@ -192,7 +249,6 @@ module.exports = app => {
             //     console.log('Itens do carrinho excluídos com sucesso.');
             // } catch (error) {
             //     console.error('Erro ao excluir itens do carrinho:', error);
-            //     // Lide com o erro de acordo com seus requisitos
             // }
 
 
@@ -217,7 +273,7 @@ module.exports = app => {
                 headers: {
                     accept: 'application/json',
                     'content-type': 'application/json',
-                    access_token: paymentApiKey
+                    access_token: asaasPaymentApiKey
                 },
                 data: {
                     billingType: 'PIX',
@@ -308,7 +364,7 @@ module.exports = app => {
                 url: 'https://sandbox.asaas.com/api/v3/payments?customer=id_client',
                 headers: {
                     accept: 'application/json',
-                    access_token: paymentApiKey
+                    access_token: asaasPaymentApiKey
                 }
             };
             //Será utilizado o cliente_id salvo no banco de dados ao criar o novo cliente
@@ -328,7 +384,7 @@ module.exports = app => {
                 url: 'https://sandbox.asaas.com/api/v3/payments/id/pixQrCode',
                 headers: {
                     accept: 'application/json',
-                    access_token: paymentApiKey
+                    access_token: asaasPaymentApiKey
                 }
             };
             //Será utilizado o cliente_id salvo no banco de dados ao criar o novo cliente
@@ -348,7 +404,7 @@ module.exports = app => {
                 url: 'https://sandbox.asaas.com/api/v3/payments/id/pixQrCode',
                 headers: {
                     accept: 'application/json',
-                    access_token: paymentApiKey
+                    access_token: asaasPaymentApiKey
                 }
             };
             //Será utilizado o cliente_id salvo no banco de dados ao criar o novo cliente
@@ -370,7 +426,7 @@ module.exports = app => {
                 headers: {
                     accept: 'application/json',
                     'content-type': 'application/json',
-                    access_token: paymentApiKey
+                    access_token: asaasPaymentApiKey
                 },
                 data: { description: 'Motivo do estorno' }//adicionar o value:valor do estorno, no data, caso não seja estornado o valor inteiro.
             };
@@ -386,7 +442,7 @@ module.exports = app => {
 
 
 
-    const getAsaasClientId = (req, res) => {
+    const getAsaasClientId = async (req, res) => {
 
         try {
 
@@ -396,7 +452,7 @@ module.exports = app => {
                 url: 'https://sandbox.asaas.com/api/v3/customers?cpfCnpj=' + cpfCNPJ + '&offset=0&limit=1',
                 headers: {
                     accept: 'application/json',
-                    access_token: paymentApiKey
+                    access_token: asaasPaymentApiKey
                 }
             };
             axios

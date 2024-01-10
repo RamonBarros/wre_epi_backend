@@ -105,9 +105,18 @@ module.exports = app =>{
         //.all(app.config.passport.authenticate())
         .post(app.api.asaas.pixPayment)
    
+    app.route('/save-order-details')
+        //.all(app.config.passport.authenticate())
+        .post(app.api.paypal.saveOrderDetails)
+    
+    app.route('/:orderID/capture-paypal-order')
+        //.all(app.config.passport.authenticate())
+        .post(app.api.paypal.captureOrder)
+
     app.route('/payment-update')
         //.all(app.config.passport.authenticate())
         .post(app.api.webHooks.paymentUpdate)
+    
         
     // app.route('/order-consult')
     //     //.all(app.config.passport.authenticate())
