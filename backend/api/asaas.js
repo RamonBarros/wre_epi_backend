@@ -185,6 +185,7 @@ module.exports = app => {
                     description: infos.description
                 }
             };
+            console.log(options)
 
             const response = await axios.request(options);
             console.log(response.data);
@@ -265,7 +266,7 @@ module.exports = app => {
         try {
             const dueDate = moment().format('YYYY-MM-DD');
             const infos = { ...req.body }
-            console.log(infos, dueDate)
+            console.log(infos)
             const options = {
 
                 method: 'POST',
@@ -284,9 +285,11 @@ module.exports = app => {
                 }
             };
 
+            console.log(options)
+
             const response = await axios.request(options);
             console.log(response.data);
-            console.log(response.data.invoiceUrl);
+            // console.log(response.data.invoiceUrl);
             res.json(response.data.invoiceUrl);
 
             let paymentData={
@@ -443,32 +446,16 @@ module.exports = app => {
 
 
     const getAsaasClientId = async (req, res) => {
-
+        console.log(req.params)
         try {
-
-            const { cpfCNPJ } = req.params;
-            const options = {
-                method: 'GET',
-                url: 'https://sandbox.asaas.com/api/v3/customers?cpfCnpj=' + cpfCNPJ + '&offset=0&limit=1',
-                headers: {
-                    accept: 'application/json',
-                    access_token: asaasPaymentApiKey
-                }
-            };
-            axios
-                .request(options)
-                .then(function (response) {
-                    console.log(response.data.data[0].id);
-                    res.json(response.data.data[0].id);
-                })
-                .catch(function (error) {
-                    console.error(error);
-                    res.status(500).json({ Error: 'Erro interno ao tentar recuperar client_id Asaas' })
-                });
+            const response = await app.db('users')
+                .select('asaas_client_id')
+                .where({ cpf: req.params.cpfCNPJ });
+                res.json(response)
         }
         catch (error) {
             console.error(error);
-            res.status(400).json({ error: 'Requisição inválida, Erro ao tentar recuperar id do cliente Asaas' });
+            res.status(400).json({ error: 'Erro ao tentar recuperar id do cliente Asaas' });
         }
     }
 
