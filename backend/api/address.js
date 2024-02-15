@@ -3,14 +3,15 @@ module.exports = app => {
 
     const save = (req,res) => {
         const address = {...req.body}
-        console.log(address)
+        // console.log(address)
+        address.country="brasil"
         if(req.params.id){
-            address.id = req.params.id
+            address.userId = req.params.id
         }
-
+        console.log(address)
         try{
             existsOrError(address.city, 'Cidade Não Informada')
-            existsOrError(address.country, 'País Não Informado')
+            // existsOrError(address.country, 'País Não Informado')
             existsOrError(address.number, 'Número Não Informado')
             existsOrError(address.district, 'Bairro Não Informado')
             existsOrError(address.state, 'Estado Não Informado')
