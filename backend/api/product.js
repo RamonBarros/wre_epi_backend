@@ -179,6 +179,15 @@ module.exports = app => {
 
     }
 
+    const searchBar = async (req,res)=>{
+        // let searchContent = req.params
+        // console.log(req.params)
+        res.status(200).send("ok")
+        
+        
 
-    return { save, remove, get, getById, getByCategoryCart }
+    }
+
+
+    return { save, remove, get, getById, getByCategoryCart,searchBar }
 }

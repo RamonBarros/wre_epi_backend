@@ -74,10 +74,14 @@ module.exports = app =>{
         //.all(app.config.passport.authenticate())
         .put(app.api.cart.save)
         
+        
     app.route('/products')
         //.all(app.config.passport.authenticate())
         .get(app.api.product.get)
         .post(app.api.product.save)
+        
+    app.route('/products/search?')
+        .get(app.api.product.searchBar)
 
     app.route('/products/:id')
         //.all(app.config.passport.authenticate())
@@ -116,6 +120,7 @@ module.exports = app =>{
     app.route('/payment-update')
         //.all(app.config.passport.authenticate())
         .post(app.api.webHooks.paymentUpdate)
+
     
         
     // app.route('/order-consult')
