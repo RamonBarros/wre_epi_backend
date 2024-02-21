@@ -189,7 +189,7 @@ module.exports = app => {
 
             const response = await axios.request(options);
             console.log(response.data);
-            res.json(response.data.invoiceUrl);
+            res.json(response.data.bankSlipUrl);
 
             let paymentData={
                 external_id: response.data.id,
@@ -285,11 +285,10 @@ module.exports = app => {
                 }
             };
 
-            console.log(options)
 
             const response = await axios.request(options);
-            console.log(response.data);
-            // console.log(response.data.invoiceUrl);
+            // console.log(response.data);
+            console.log(response.data.invoiceUrl);
             res.json(response.data.invoiceUrl);
 
             let paymentData={
@@ -308,7 +307,7 @@ module.exports = app => {
                 //O certo é utilizar o status da api de frete: enviado, entregue, em transito e etc. E o external_id deve ser o id do pedido de frete da api de frete
             }
             
-            console.log(orderData);
+        
 
             let orderItems = await app
                 .db('cart_items')
@@ -330,7 +329,7 @@ module.exports = app => {
 
 
 
-                    console.log(orderItems);
+                    
 
                     // Use o método insert para inserir múltiplos registros
                     await app.db('order_items').insert(orderItems);
@@ -451,7 +450,7 @@ module.exports = app => {
             const response = await app.db('users')
                 .select('asaas_client_id')
                 .where({ cpf: req.params.cpfCNPJ });
-                res.json(response)
+                res.json(response[0].asaas_client_id)
         }
         catch (error) {
             console.error(error);
