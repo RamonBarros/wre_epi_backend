@@ -180,10 +180,20 @@ module.exports = app => {
     }
 
     const searchBar = async (req,res)=>{
-        // let searchContent = req.params
-        // console.log(req.params)
-        res.status(200).send("ok")
+        const page = req.query.page || 1
+        const perPage= 20;
+        const offset = (page - 1) * perPage;
+
+        let searchContent = req.query.q
+        console.log(req.query)
         
+        app.db('products')
+            .select('id','name','price','imageUrl','stock')
+            .where('name', 'ILIKE', `%${searchContent}%`)
+            .limit(perPage)
+            .offset(offset)
+            .then(products => res.json(products))
+            .catch(err => res.status(500).send(err));      
         
 
     }
