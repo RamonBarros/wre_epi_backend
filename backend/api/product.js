@@ -137,9 +137,6 @@ module.exports = app => {
             const images = await app.db('product_images')
                 .select('product_id', 'url')
 
-
-
-
             //   Mapeia os resultados para formatar o array de imagens
             const formattedProducts = products.map(product => {
 
@@ -179,23 +176,40 @@ module.exports = app => {
 
     }
 
-    const searchBar = async (req,res)=>{
-        const page = req.query.page || 1
-        const perPage= 20;
-        const offset = (page - 1) * perPage;
-
-        let searchContent = req.query.q
+    const searchBar = async (req, res) => { 
+        const page = req.query.page || 1;
+        const perPage = 20;
+        const searchContent = req.query.q;
         console.log(req.query)
-        
-        app.db('products')
-            .select('id','name','price','imageUrl','stock')
-            .where('name', 'ILIKE', `%${searchContent}%`)
-            .limit(perPage)
-            .offset(offset)
-            .then(products => res.json(products))
-            .catch(err => res.status(500).send(err));      
-        
-    }
+        try {
+            const totalItemsQuery = await app.db('products')
+                .count('id as total')
+                .where('name', 'ILIKE', `%${searchContent}%`)
+                .first();
+            
+            const totalItems = totalItemsQuery.total;
+            const totalPages = Math.ceil(totalItems / perPage);
+    
+            const products = await app.db('products')
+                .select('id', 'name', 'price', 'imageUrl', 'stock')
+                .where('name', 'ILIKE', `%${searchContent}%`)
+                .limit(perPage)
+                .offset((page - 1) * perPage);
+    
+            res.json({
+                totalItems,
+                totalPages,
+                currentPage: page,
+                itemsPerPage: perPage,
+                items: products
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).send(error);
+        }
+    };
+    
+    
 
 
     return { save, remove, get, getById, getByCategoryCart,searchBar }
