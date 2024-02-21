@@ -195,7 +195,6 @@ module.exports = app => {
             .then(products => res.json(products))
             .catch(err => res.status(500).send(err));      
         
-
     }
 
 
