@@ -120,6 +120,10 @@ module.exports = app =>{
     app.route('/payment-update')
         //.all(app.config.passport.authenticate())
         .post(app.api.webHooks.paymentUpdate)
+    
+    app.route('/shipping-quote')
+        //.all(app.config.passport.authenticate())
+        .get(app.api.frenet.shippingQuote)
 
     
         
