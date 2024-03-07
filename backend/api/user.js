@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt') 
 const { request } = require('express')
-const {authSecret} = require('../.env')
+const {asaasPaymentApiKey,authSecret} = require('../.env')
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const { json } = require('body-parser');
@@ -91,7 +91,7 @@ module.exports = app =>{
     
     const getById = (req, res) => {
         app.db('users')
-            .select('id','name','email','admin','cpf','empresa','telefone')
+            .select('id','name','email','admin','cpf','empresa','telefone','birth_date')
             .where({id: req.params.id})
             .first()
             .then(users =>res.json(users))
@@ -223,7 +223,7 @@ module.exports = app =>{
                 headers: {
                     accept: 'application/json',
                     'content-type': 'application/json',
-                    access_token: '$aact_YTU5YTE0M2M2N2I4MTliNzk0YTI5N2U5MzdjNWZmNDQ6OjAwMDAwMDAwMDAwMDAwNjc0NjI6OiRhYWNoXzZlMWYxMjlhLWU5MDYtNDQ0NS1hZmU3LTE4ZWY3YzExZDJiOA=='
+                    access_token: asaasPaymentApiKey
                 },
                 data: {
                     name: clientName,
@@ -242,7 +242,7 @@ module.exports = app =>{
 
         } catch (error) {
             console.error(error);
-           throw new Error('Erro interno do servidor');
+           throw new Error('Erro interno do servidor'); 
         }
     };
 
