@@ -1,7 +1,7 @@
 module.exports = app => {
     const axios = require('axios');
 
-    const shippingQuote = (req, res) => {
+    const shippingQuote = async (req, res) => {
         const info = { ...req.body }
         console.log(info)
         const apiUrl = 'https://api.frenet.com.br/shipping/quote';
@@ -10,10 +10,18 @@ module.exports = app => {
         const cepOrig = "56306150"
 
         // const cepDest = "23812310"
-        const cepDest = info.ZipCode
+        const cepDest = info.zipCode
 
         // const itensTotalValue = 990
         const itensTotalValue = info.total
+
+        
+        const productIds = info.products.map(product => product.product_id);
+
+        const itemsList = await app.db('products')
+            .select('package_weight as Weight', 'package_height as Height', 'package_width as Width', 'package_length as Length')
+            .whereIn('id', productIds);
+
 
 
 
@@ -51,12 +59,12 @@ module.exports = app => {
         //         "Width": 24
         //     }
         // ]
-        const itemsList = info.products
+        // const itemsList = info.products
 
         const requestData = {
             "SellerCEP": cepOrig,
             "RecipientCEP": cepDest,
-            "ShipmentInvoiceValue": itensTotalValue,
+            "ShipmentInvoiceValue": info.Total,
             "ShippingServiceCode": null,
             "ShippingItemArray": itemsList,
             "RecipientCountry": "BR"
@@ -73,13 +81,15 @@ module.exports = app => {
             data: requestData
         };
 
+        console.log(config)
+
         function transformElementToQuote(element) {
             return {
                 ServiceCode: element.ServiceCode,
                 ServiceDescription: element.ServiceDescription,
-                Carrier: element.Carrier,
-                ShippingPrice: element.ShippingPrice,
-                DeliveryTime: element.DeliveryTime
+                Name: element.Carrier,
+                Price: element.ShippingPrice,
+                DeliveryTime: element.DeliveryTime +' a '+ (parseInt(element.DeliveryTime)+2) + ' dias úteis'
             };
         }
         
@@ -88,7 +98,7 @@ module.exports = app => {
                 const shippingQuote = response.data.ShippingSevicesArray
                     .filter(element => element.Error === false && element.AllowBuyLabel === true)
                     .map(transformElementToQuote);
-        
+                
                 console.log(shippingQuote);
                 res.status(200).send(shippingQuote);
             })
@@ -96,7 +106,6 @@ module.exports = app => {
                 console.log(error);
                 res.status(500).send(error);
             });
-
     }
 
 

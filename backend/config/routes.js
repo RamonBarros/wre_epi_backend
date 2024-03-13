@@ -123,7 +123,7 @@ module.exports = app =>{
     
     app.route('/shipping-quote')
         //.all(app.config.passport.authenticate())
-        .get(app.api.frenet.shippingQuote)
+        .post(app.api.frenet.shippingQuote)
 
     
         
