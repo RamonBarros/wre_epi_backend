@@ -73,8 +73,9 @@ module.exports = app => {
                 external_id: response.data.id,
                 client_id: infos.client_id,
                 status: response.data.status,
-                total: infos.installmentCount*infos.installmentValue,
-                order_date: response.data.dateCreated
+                total: ((infos.installmentCount*infos.installmentValue)-infos.shipping_price),
+                order_date: response.data.dateCreated,
+                shipping_cost:infos.shipping_price
                 //O certo é utilizar o status da api de frete: enviado, entregue, em transito e etc. E o external_id deve ser o id do pedido de frete da api de frete
             }
             
@@ -203,8 +204,9 @@ module.exports = app => {
                 external_id: response.data.id,
                 client_id: infos.client_id,
                 status: response.data.status,
-                total: response.data.value,
-                order_date: response.data.dateCreated
+                total: (response.data.value-infos.shipping_price),
+                order_date: response.data.dateCreated,
+                shipping_cost:infos.shipping_price
                 //O certo é utilizar o status da api de frete: enviado, entregue, em transito e etc. E o external_id deve ser o id do pedido de frete da api de frete
             }
             
@@ -302,8 +304,9 @@ module.exports = app => {
                 external_id: response.data.id,
                 client_id: infos.client_id,
                 status: response.data.status,
-                total: response.data.value,
-                order_date: response.data.dateCreated
+                total: (response.data.value-infos.shipping_price),
+                order_date: response.data.dateCreated,
+                shipping_cost:infos.shipping_price
                 //O certo é utilizar o status da api de frete: enviado, entregue, em transito e etc. E o external_id deve ser o id do pedido de frete da api de frete
             }
             

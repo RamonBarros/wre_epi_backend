@@ -212,5 +212,5 @@ module.exports = app => {
     
 
 
-    return { save, remove, get, getById, getByCategoryCart,searchBar }
+    return { save, remove, get, getById, getByCategoryCart, searchBar }
 }
