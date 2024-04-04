@@ -11,7 +11,7 @@ module.exports = app =>{
         const user = await app.db('users')
             .where({ email: req.body.email })
             .first();
-    
+        console.log(user);
         if (!user) {
             return res.status(401).send('Usuário não encontrado!');
         }
@@ -42,11 +42,13 @@ module.exports = app =>{
 
     const validateToken = (req, res) => {
         const userData = req.body || null;
+        console.log(userData);
         try {
             if (userData) {
                 const token = jwt.decode(userData.token, authSecret);
                 if (new Date(token.exp * 1000) > new Date()) {
-                    return res.send(true);
+                    const isAdmin = userData.isAdmin;
+                    return res.send({valid:true, isAdmin});
                 }
             }
         } catch (error) {

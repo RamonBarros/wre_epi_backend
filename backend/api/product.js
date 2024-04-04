@@ -71,7 +71,6 @@ module.exports = app => {
                     console.log(product.id)
 
                     if (images.images.length > 0) {
-                        console.log("entrou aqui", product)
                         const nonNullImages = images.images.filter(url => url !== null && url !== undefined && url !== '');
 
                         const imageData = nonNullImages.map(url => ({

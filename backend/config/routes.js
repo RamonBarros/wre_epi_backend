@@ -10,13 +10,13 @@ module.exports = app =>{
     //por estar usando consign nao é necessario usar o require de user
     //ao acessar a rota /user chamará a função save
     app.route('/users')
-        //.all(app.config.passport.authenticate())
+        // .all(app.config.passport.authenticate())
     //faz uma requisição do tipo Post utilizando o metodo save
         .post(app.api.user.save)
     //faz uma requisição do tipo Get utilizando o metodo get
         .get(app.api.user.get)
     app.route('/users/:id')
-    //.all(app.config.passport.authenticate())
+    .all(app.config.passport.authenticate())
     //O metodo save é utilizado tanto para salvar um novo usuario como para
     //alterar o cadastro de um usuario já cadastrado, com a diferença sendo
     //se é passado o id do usuario na url da requisição
@@ -28,16 +28,16 @@ module.exports = app =>{
         .get(app.api.user.getById)
 
     app.route('/address')
-        //.all(app.config.passport.authenticate())
+        .all(app.config.passport.authenticate())
         .post(app.api.address.save)
         .get(app.api.address.get)
     app.route('/address/:id')
-        //.all(app.config.passport.authenticate())
+        .all(app.config.passport.authenticate())
         .put(app.api.address.save)
        // .get(app.api.address.getById)
     
     app.route('/address/:userId')
-        //.all(app.config.passport.authenticate())
+        .all(app.config.passport.authenticate())
         .get(app.api.address.getByClientId)
         
     app.route('/categories')
@@ -56,22 +56,22 @@ module.exports = app =>{
         .delete(app.api.category.remove)
     
     app.route('/cart')
-        //.all(app.config.passport.authenticate())
+        .all(app.config.passport.authenticate())
         .get(app.api.cart.get)
         .post(app.api.cart.save)
         .delete(app.api.cart.remove)
         
     app.route('/cart/:client_id')
-        //.all(app.config.passport.authenticate())
+        .all(app.config.passport.authenticate())
         .post(app.api.cart.save)
         .get(app.api.cart.getByClientId)
 
     app.route('/cart/count/:client_id')
-        //.all(app.config.passport.authenticate())
+        .all(app.config.passport.authenticate())
         .get(app.api.cart.getCountByClientId)
 
     app.route('/cart/update')
-        //.all(app.config.passport.authenticate())
+        .all(app.config.passport.authenticate())
         .put(app.api.cart.save)
         
         
@@ -84,41 +84,59 @@ module.exports = app =>{
         .get(app.api.product.searchBar)
 
     app.route('/products/:id')
-        //.all(app.config.passport.authenticate())
+        .all(app.config.passport.authenticate())
         .get(app.api.product.getById)
         .put(app.api.product.save)
         .delete(app.api.product.remove)
 
+    app.route('/assets/banners')
+        // .all(app.config.passport.authenticate())
+        .get(app.api.assets.getBanners)
+        .put(app.api.assets.saveBanners)
+        .delete(app.api.assets.removeBanners)
+
+    app.route('/assets/carrousel')
+        // .all(app.config.passport.authenticate())
+        .get(app.api.assets.getCarrousel)
+        .put(app.api.assets.saveCarrousel)
+        .delete(app.api.assets.removeCarrousel)
+    
+    app.route('/orders/:client_id')
+        .all(app.config.passport.authenticate())
+        .get(app.api.order.getByClientId)
+        .put(app.api.order.save)
+        .delete(app.api.order.remove)
+
     app.route('/categories/:id/products-cart')
-        //.all(app.config.passport.authenticate())
+        // .all(app.config.passport.authenticate())
         .get(app.api.product.getByCategoryCart)
 
     app.route('/credCard-payment')
-        //.all(app.config.passport.authenticate())
+        .all(app.config.passport.authenticate())
         .post(app.api.asaas.credCardPayment)
    
     app.route('/client-id/:cpfCNPJ')
-       //.all(app.config.passport.authenticate())
+       .all(app.config.passport.authenticate())
        .get(app.api.asaas.getAsaasClientId)
     
     app.route('/bankSlip-payment')
-        //.all(app.config.passport.authenticate())
+        .all(app.config.passport.authenticate())
         .post(app.api.asaas.bankSlipPayment)
 
     app.route('/pix-payment')
-        //.all(app.config.passport.authenticate())
+        .all(app.config.passport.authenticate())
         .post(app.api.asaas.pixPayment)
    
     app.route('/save-order-details')
-        //.all(app.config.passport.authenticate())
+        .all(app.config.passport.authenticate())
         .post(app.api.paypal.saveOrderDetails)
     
     app.route('/:orderID/capture-paypal-order')
-        //.all(app.config.passport.authenticate())
+        .all(app.config.passport.authenticate())
         .post(app.api.paypal.captureOrder)
 
     app.route('/payment-update')
-        //.all(app.config.passport.authenticate())
+        .all(app.config.passport.authenticate())
         .post(app.api.webHooks.paymentUpdate)
     
     app.route('/shipping-quote')
