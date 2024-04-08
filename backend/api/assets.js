@@ -45,22 +45,22 @@ module.exports = app => {
         }
     };
 
-    const saveCarrousel = async (req, res) => {
+    const saveCarousel = async (req, res) => {
         const info = Object.values({ ...req.body });
-        console.log(info)
+        console.log(info);
 
         try {
-                // await app.db('carrousel_images').del();
-                await app.db('carrousel_images').insert(info)
-            res.status(200).send("banners salvos com sucesso!");
+                await app.db('carousel_images').del();
+                await app.db('carousel_images').insert(info)
+            res.status(200).send("Carrossel salvos com sucesso!");
         } catch (error) {
             console.log(error);
-            res.status(500).send("Erro ao Salvar Banners" + error.message);
+            res.status(500).send("Erro ao Salvar Carrossel" + error.message);
         }
 
     } 
 
-    const removeCarrousel = async (req, res) => {
+    const removeCarousel = async (req, res) => {
         try {
         //   await app.db('product_images').where({ product_id: req.params.id }).del();
       
@@ -74,23 +74,50 @@ module.exports = app => {
       };
 
 
-    const getCarrousel = async (req, res) => {
+    const getCarouselToEdit = async (req, res) => {
         try {
-            const banners = await app.db('carrousel_images')
-                .select('carrousel_image_url','carrousel_image_link')
+            const carroussel = await app.db('carousel_images')
+                .select('carousel_image_url','carousel_image_link')
                 .groupBy('id')  
                 .orderBy('id')
-
-            res.json(banners);
+            res.json(carroussel);
         } catch (err) {
             console.error(err);
             res.status(500).send(err);
         }
     };
 
+
+    const getCarousel = async (req, res) => {
+        try {
+            const response = await app.db('carousel_images')
+                .select('carousel_image_url', 'carousel_image_link')
+                .orderBy('id');
+    
+            const imagesUrls = [];
+            const imagesLinks = [];
+    
+            response.forEach(item => {
+                if (item.carousel_image_url.trim() !== '' && item.carousel_image_link.trim() !== '') {
+                    imagesUrls.push({ image: item.carousel_image_url });
+                    imagesLinks.push({ link: item.carousel_image_link });
+                }
+            });
+    
+            const carousel_data = {
+                imagesUrls: imagesUrls,
+                imagesLinks: imagesLinks
+            };
+    
+            res.json(carousel_data);
+        } catch (err) {
+            console.error(err);
+            res.status(500).send(err);
+        }
+    };
     
     
 
 
-    return { saveBanners, removeBanners, getBanners, saveCarrousel, removeCarrousel, getCarrousel }
+    return { saveBanners, removeBanners, getBanners, saveCarousel, removeCarousel, getCarousel,getCarouselToEdit }
 }

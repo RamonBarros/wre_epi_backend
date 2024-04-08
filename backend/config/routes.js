@@ -95,12 +95,17 @@ module.exports = app =>{
         .put(app.api.assets.saveBanners)
         .delete(app.api.assets.removeBanners)
 
-    app.route('/assets/carrousel')
+    app.route('/assets/carousel')
         // .all(app.config.passport.authenticate())
-        .get(app.api.assets.getCarrousel)
-        .put(app.api.assets.saveCarrousel)
-        .delete(app.api.assets.removeCarrousel)
-    
+        .get(app.api.assets.getCarousel)
+        
+
+    app.route('/assets/carousel/edit')
+        .all(app.config.passport.authenticate())
+        .get(app.api.assets.getCarouselToEdit)
+        .put(app.api.assets.saveCarousel)
+        .delete(app.api.assets.removeCarousel)
+
     app.route('/orders/:client_id')
         .all(app.config.passport.authenticate())
         .get(app.api.order.getByClientId)
