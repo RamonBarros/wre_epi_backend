@@ -6,6 +6,7 @@ module.exports = app => {
 
     const credCardPayment = async (req, res) => {
         const infos = { ...req.body }
+        console.log(infos)
         const dueDate = moment().format('YYYY-MM-DD');
         let holderInfo, holderAddressInfo;
         try {
@@ -65,7 +66,8 @@ module.exports = app => {
                 external_id: response.data.id,
                 status: response.data.status,
                 totalValue: infos.installmentCount*infos.installmentValue,
-                type: response.data.billingType
+                type: response.data.billingType,
+                payment_link: response.data.invoiceUrl
             }
         
             
@@ -85,13 +87,13 @@ module.exports = app => {
                 .select('product_id', 'quantity')
                 .where({ client_id: infos.client_id });
 
-                console.log(orderItems);
+                // console.log(orderItems);
 
             const orderId = await app.db('order')
                 .insert(orderData)
                 .returning('id')
                 .then(async (orderId) => {
-                    console.log(orderId[0].id);
+                    // console.log(orderId[0].id);
 
                     orderItems = orderItems.map((orderItem) => {
                         orderItem.order_id = orderId[0].id;
@@ -102,11 +104,17 @@ module.exports = app => {
 
 
 
-                    console.log(orderItems);
+                    console.log(paymentData);
 
-                    // Use o método insert para inserir múltiplos registros
-                    await app.db('order_items').insert(orderItems);
-                    await app.db('payments').insert(paymentData);
+                    try {
+                        await app.db.transaction(async trx => {
+                            await trx('order_items').insert(orderItems);
+                            await trx('payments').insert(paymentData);
+                        });
+                    } catch (error) {
+                        console.error('Erro ao inserir dados:', error);
+                    }
+                    
 
                 });
 
@@ -196,7 +204,8 @@ module.exports = app => {
                 external_id: response.data.id,
                 status: response.data.status,
                 totalValue: response.data.value, 
-                type: response.data.billingType
+                type: response.data.billingType,
+                payment_link: response.data.billingType
             }
         
             
@@ -236,9 +245,14 @@ module.exports = app => {
 
                     console.log(orderItems);
 
-                    // Use o método insert para inserir múltiplos registros
-                    await app.db('order_items').insert(orderItems);
-                    await app.db('payments').insert(paymentData);
+                    try {
+                        await app.db.transaction(async trx => {
+                            await trx('order_items').insert(orderItems);
+                            await trx('payments').insert(paymentData);
+                        });
+                    } catch (error) {
+                        console.error('Erro ao inserir dados:', error);
+                    }
 
                 });
 
@@ -256,7 +270,6 @@ module.exports = app => {
 
 
             // Salvar o id da cobrança response.data.id , poderá ser utilizado caso seja necessario o estorno da cobrança, é necessario alterar o banco de dados para permitir salvar este campo.
-            // Salvar o link do boleto, também é possivel pagar o boleto via pix, o campo é o invoiceUrl
         } catch (error) {
             console.error(error);
             res.status(500).json({ error: 'Erro interno do servidor' });
@@ -297,7 +310,8 @@ module.exports = app => {
                 external_id: response.data.id,
                 status: response.data.status,
                 totalValue: response.data.value,
-                type: response.data.billingType
+                type: response.data.billingType,
+                payment_link: response.data.invoiceUrl
             }
             
             const orderData = {
@@ -330,13 +344,20 @@ module.exports = app => {
                     
                     paymentData.order_id = orderId[0].id;
 
-
+                    console.log(paymentData)
 
                     
 
                     // Use o método insert para inserir múltiplos registros
-                    await app.db('order_items').insert(orderItems);
-                    await app.db('payments').insert(paymentData);
+                    try {
+                        await app.db.transaction(async trx => {
+                            await trx('order_items').insert(orderItems);
+                            await trx('payments').insert(paymentData);
+                        });
+                    } catch (error) {
+                        console.error('Erro ao inserir dados:', error);
+                    }
+                    
 
                 });
 
@@ -367,46 +388,6 @@ module.exports = app => {
 
                 method: 'GET',
                 url: 'https://sandbox.asaas.com/api/v3/payments?customer=id_client',
-                headers: {
-                    accept: 'application/json',
-                    access_token: asaasPaymentApiKey
-                }
-            };
-            //Será utilizado o cliente_id salvo no banco de dados ao criar o novo cliente
-            const response = await axios.request(options);
-            console.log(response.data);
-            res.json(response.data);
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: 'Erro interno do servidor' });
-        }
-    }
-
-    const paymentQrCode = async (req, res) => {
-        try {
-            const options = {
-                method: 'GET',
-                url: 'https://sandbox.asaas.com/api/v3/payments/id/pixQrCode',
-                headers: {
-                    accept: 'application/json',
-                    access_token: asaasPaymentApiKey
-                }
-            };
-            //Será utilizado o cliente_id salvo no banco de dados ao criar o novo cliente
-            const response = await axios.request(options);
-            console.log(response.data);
-            res.json(response.data);
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: 'Erro interno do servidor' });
-        }
-    }
-
-    const bankSlipLink = async (req, res) => {
-        try {
-            const options = {
-                method: 'GET',
-                url: 'https://sandbox.asaas.com/api/v3/payments/id/pixQrCode',
                 headers: {
                     accept: 'application/json',
                     access_token: asaasPaymentApiKey
@@ -463,5 +444,5 @@ module.exports = app => {
 
 
 
-    return { credCardPayment, bankSlipPayment, pixPayment, listBill, returnPayment, getAsaasClientId, paymentQrCode, bankSlipLink }
+    return { credCardPayment, bankSlipPayment, pixPayment, listBill, returnPayment, getAsaasClientId }
 }
