@@ -58,8 +58,8 @@ module.exports = app => {
                         await app.db('product_images').insert(imageData)
                     }
 
-                    console.log("deu bom")
                 } catch (error) {
+                    console.error(error)
                     res.status(500).send("Erro ao atualizar Produto", error)
                 }
 
@@ -100,17 +100,17 @@ module.exports = app => {
 
     const remove = async (req, res) => {
         try {
-          await app.db('product_images').where({ product_id: req.params.id }).del();
-      
-          const rowsDeleted = await app.db('products').where({ id: req.params.id }).del();
-          existsOrError(rowsDeleted, 'Produto Não Foi Encontrado.');
-      
-          res.status(200).send("Produto Excluido Com Sucesso!");
+            await app.db('product_images').where({ product_id: req.params.id }).del();
+
+            const rowsDeleted = await app.db('products').where({ id: req.params.id }).del();
+            existsOrError(rowsDeleted, 'Produto Não Foi Encontrado.');
+
+            res.status(200).send("Produto Excluido Com Sucesso!");
         } catch (msg) {
-          res.status(500).send(msg);
+            res.status(500).send(msg);
         }
-      };
-      
+    };
+
 
     // const limit = 10
     // const get = async (req, res) => {
@@ -158,10 +158,41 @@ module.exports = app => {
 
 
     const getById = async (req, res) => {
-        app.db('products')
-            .where({ id: req.params.id })
-            .then(product => product = res.json(product))
-            .catch(err => res.status(500).send(err))
+
+        try {
+            const product = await app.db('products')
+                .select('*') 
+                .where('id', '=', req.params.id)
+                .first();
+
+            const images = await app.db('product_images')
+                .select('url')
+                .where('product_id','=', req.params.id)
+
+            //   Mapeia os resultados para formatar o array de imagens
+
+           const formatedData = {
+                    product: product,
+                    images: images
+                };
+
+            res.json(formatedData);
+        } catch (err) {
+            res.status(500).send(err);
+        }
+
+    }
+    const getProductById = async (req, res) => {
+        try {
+            const product = await app.db('products')
+                .select('*') 
+                .where('id', '=', req.params.id)
+                .first();
+            res.json(product);
+        } catch (err) {
+            res.status(500).send(err);
+        }
+
     }
 
     const getByCategoryCart = async (req, res) => {
@@ -175,7 +206,7 @@ module.exports = app => {
 
     }
 
-    const searchBar = async (req, res) => { 
+    const searchBar = async (req, res) => {
         const page = req.query.page || 1;
         const perPage = 20;
         const searchContent = req.query.q;
@@ -185,16 +216,16 @@ module.exports = app => {
                 .count('id as total')
                 .where('name', 'ILIKE', `%${searchContent}%`)
                 .first();
-            
+
             const totalItems = totalItemsQuery.total;
             const totalPages = Math.ceil(totalItems / perPage);
-    
+
             const products = await app.db('products')
                 .select('id', 'name', 'price', 'imageUrl', 'stock')
                 .where('name', 'ILIKE', `%${searchContent}%`)
                 .limit(perPage)
                 .offset((page - 1) * perPage);
-    
+
             res.json({
                 totalItems,
                 totalPages,
@@ -207,9 +238,9 @@ module.exports = app => {
             res.status(500).send(error);
         }
     };
-    
-    
 
 
-    return { save, remove, get, getById, getByCategoryCart, searchBar }
+
+
+    return { save, remove, get, getById, getByCategoryCart, searchBar,getProductById }
 }
