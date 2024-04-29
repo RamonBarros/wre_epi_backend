@@ -28,7 +28,6 @@ module.exports = app =>{
             name: user.name,
             email: user.email,
             cpf: user.cpf,
-            isAdmin: user.admin,
             iat: now,
             exp: now + (60 * 60 * 24 * 3)
         };
@@ -40,15 +39,17 @@ module.exports = app =>{
     };
     
 
-    const validateToken = (req, res) => {
+    const validateToken = async (req, res) => {
         const userData = req.body || null;
         console.log(userData);
         try {
             if (userData) {
                 const token = jwt.decode(userData.token, authSecret);
                 if (new Date(token.exp * 1000) > new Date()) {
-                    const isAdmin = userData.isAdmin;
-                    return res.send({valid:true, isAdmin});
+                    const isAdmin = await app.db('users').where('id', '=', userData.id).pluck('admin');  
+                    console.log(isAdmin[0])
+
+                    return res.send({valid:true, isAdmin: isAdmin[0]});
                 }
             }
         } catch (error) {
