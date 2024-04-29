@@ -1,28 +1,46 @@
+const Joi = require('joi');
+
 module.exports = app =>{
     const {existsOrError,notExistsOrError} = app.api.validation
 
-    const save =(req, res) =>{
+    const save = async (req, res) =>{
         const category = {...req.body}
+        console.log(category)
         if(req.params.id) category.id = req.params.id 
 
+        const schema = Joi.object({
+            name: Joi.string().required().messages({
+                'any.required': 'Nome não inserido',
+                'string.base': 'O campo Nome deve ser uma string.'
+            })
+        });
+
         try{
-            existsOrError(category.name,'Nome da categoria não informado')
-
-        }catch(msg){
-            return res.status(404).send(msg)
-        }
-
-        if(category.id){
-            app.db('categories')
-            .update(category)
-            .where({id: category.id})
-            .then(_=> res.status(204).send())
-            .catch(err=>res.status(500).send(err))
-        }else{
-            app.db('categories')
-            .insert(category)
-            .then(_=> res.status(204).send())
-            .catch(err=>res.status(500).send(err))
+            const { error} = await schema.validateAsync(category);
+            
+            if (error) {
+                console.error(error.message)
+                throw new Error(error.message);
+            } else {
+                console.log("Validado");
+            }
+            
+            if(category.id){
+                await app.db('categories')
+                .update(category)
+                .where({id: category.id})
+                res.status(204).send('Categoria Atualizada Com Sucesso!')
+                
+                
+            }else{
+                const categoryFromDB = await app.db('categories').select('name').where({name: category.name}).first();
+                notExistsOrError(categoryFromDB, 'Categoria já cadastrada')
+                await app.db('categories').insert(category)
+                res.status(204).send('Categoria Salva Com Sucesso!')
+            }
+        }catch(error){
+            console.error('Erro de validação:', error.message);
+            return res.status(400).send({ message: error.message })
         }
     }
 
