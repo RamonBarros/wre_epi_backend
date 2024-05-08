@@ -56,20 +56,6 @@ module.exports = app =>{
         }
     }
 
-    const get = async (req, res) => {
-        try {
-          const result = await app.db('cart_items');
-      
-          if (result.length === 0) {
-            return res.status(404).json({ error: 'Nenhum Carrinho de Compras encontrado' });
-          }
-      
-          res.json(result);
-        } catch (err) {
-          res.status(500).send(err);
-        }
-      };
-
       const getCountByClientId = async (client_id) => {
         try {
           const count = await app.db('cart_items')
@@ -127,5 +113,5 @@ module.exports = app =>{
       }
     };
 
-    return {save,remove,get,getById,getByClientId,getCountByClientId}
+    return {save,remove,getById,getByClientId,getCountByClientId}
 }

@@ -20,7 +20,7 @@ module.exports = app => {
         console.log(info)
         const schema = Joi.object({
             id: Joi.number().messages({
-                'number.base': 'Nome Não Informado',
+                'number.base': 'Id Não Informado',
                 'number.positive': 'Id deve ser um número positivo'
             }),
             name: Joi.string().required().messages({

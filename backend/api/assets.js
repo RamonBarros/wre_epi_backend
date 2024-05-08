@@ -38,7 +38,7 @@ module.exports = app => {
 
             res.status(200).send("banners salvos com sucesso!");
         } catch (error) {
-            console.error(error.message); // Log the actual error for debugging
+            console.error(error.message); 
             return res.status(500).send({ message: error.message })
         }
 
@@ -83,18 +83,18 @@ module.exports = app => {
                     })
                 }),
             carousel_image_url: Joi.string()
-                .trim()
-                .allow('')
-                .when(Joi.string().empty(), {
-                    then: Joi.string().allow(''),
-                    otherwise: Joi.string()
-                        .uri()
-                        .regex(/\.(gif|jpe?g|tiff?|png|webp|bmp)$/i)
-                        .messages({
-                            'string.uri': 'Informe um URL válido para a imagem do banner.',
-                            'string.pattern.base': 'O Link da Imagem do Banner deve ser um URL válido e estar em um dos formatos suportados: gif, jpg, jpeg, tiff, png, webp, bmp.'
-                        })
-                })
+            .trim()
+            .uri()  // Validate as a URL first
+            .allow('')  // Allow empty string if validation fails
+            .when(Joi.string().empty(), {
+                then: Joi.string().allow(''),
+                otherwise: Joi.string()
+                    .regex(/\.(gif|jpe?g|tiff?|png|webp|bmp)$/i)
+                    .messages({
+                        'string.uri': 'Informe um URL válido para a imagem do banner.',
+                        'string.pattern.base': 'O Link da Imagem do Banner deve ser um URL válido e estar em um dos formatos suportados: gif, jpg, jpeg, tiff, png, webp, bmp.'
+                    })
+            })
         });
 
         try {

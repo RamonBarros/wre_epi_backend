@@ -120,15 +120,15 @@ module.exports = app => {
 
                 //RESETA O CARRINHO DE COMPRA APÓS CONFIRMAR O PEDIDO
 
-            // try {
-            //     await app.db('cart_items')
-            //         .where({ client_id: infos.client_id })
-            //         .delete();
+            try {
+                await app.db('cart_items')
+                    .where({ client_id: infos.client_id })
+                    .delete();
 
-            //     console.log('Itens do carrinho excluídos com sucesso.');
-            // } catch (error) {
-            //     console.error('Erro ao excluir itens do carrinho:', error);
-            // }
+                console.log('Itens do carrinho excluídos com sucesso.');
+            } catch (error) {
+                console.error('Erro ao excluir itens do carrinho:', error);
+            }
 
             // Salvar o id da cobrança response.data.id , poderá ser utilizado caso seja necessario o estorno da cobrança, é necessario alterar o banco de dados para permitir salvar este campo.
         } catch (error) {
@@ -339,7 +339,7 @@ module.exports = app => {
 
                     orderItems = orderItems.map((orderItem) => {
                         orderItem.order_id = orderId[0].id;
-                        return orderItem;  // Retorne o orderItem modificado
+                        return orderItem;  
                     });
                     
                     paymentData.order_id = orderId[0].id;
@@ -348,7 +348,7 @@ module.exports = app => {
 
                     
 
-                    // Use o método insert para inserir múltiplos registros
+                    // Usa o método insert para inserir múltiplos registros
                     try {
                         await app.db.transaction(async trx => {
                             await trx('order_items').insert(orderItems);
@@ -363,16 +363,15 @@ module.exports = app => {
 
                 //RESETA O CARRINHO DE COMPRA APÓS CONFIRMAR O PEDIDO
 
-            // try {
-            //     await app.db('cart_items')
-            //         .where({ client_id: infos.client_id })
-            //         .delete();
+            try {
+                await app.db('cart_items')
+                    .where({ client_id: infos.client_id })
+                    .delete();
 
-            //     console.log('Itens do carrinho excluídos com sucesso.');
-            // } catch (error) {
-            //     console.error('Erro ao excluir itens do carrinho:', error);
-            //     // Lide com o erro de acordo com seus requisitos
-            // }
+                console.log('Itens do carrinho excluídos com sucesso.');
+            } catch (error) {
+                console.error('Erro ao excluir itens do carrinho:', error);
+            }
 
 
         } catch (error) {

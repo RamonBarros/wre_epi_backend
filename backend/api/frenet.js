@@ -1,11 +1,12 @@
 module.exports = app => {
     const axios = require('axios');
+    const { frenetToken } = require('../.env')
 
     const shippingQuote = async (req, res) => {
         const info = { ...req.body }
         console.log(info)
         const apiUrl = 'https://api.frenet.com.br/shipping/quote';
-        const token = '2BDBE3EERF6C5R429AR8E84RF28F7E4A439A';
+        // const token = '2BDBE3EERF6C5R429AR8E84RF28F7E4A439A';
 
         const cepOrig = "56306150"
 
@@ -76,7 +77,7 @@ module.exports = app => {
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'token': token
+                'token': frenetToken
             },
             data: requestData
         };

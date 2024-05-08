@@ -1,5 +1,14 @@
 module.exports = {
     authSecret: '@!@$%¨&*()&%#$@SDFGHIUOYTDSF75572',
+    asaasPaymentApiKey:'apiKeydoAsaas',
+    payPalPaymentApiKey:'apiKeypayPal',
+    CLIENT_ID:'client_id do paypal',
+    CLIENT_SECRET:'client_secret do paypal',
+    frenetToken: 'token de segurança da frenet',
+    emailAuth:{
+      user: 'email',
+      pass: 'senha',
+    },
     db:{
     database: 'nomedobd',
     user:     'postgres',

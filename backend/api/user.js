@@ -1,16 +1,15 @@
 const bcrypt = require('bcrypt')
 const { request } = require('express')
-const { asaasPaymentApiKey, authSecret } = require('../.env')
+const { asaasPaymentApiKey, authSecret, emailAuth } = require('../.env')
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const { json } = require('body-parser');
-const baseApiUrl = "http://localhost:3000"
-const axios = require('axios')
+const axios = require('axios') 
 const Joi = require('joi');
 
 module.exports = app => {
     //Importa as funções de validação de dados de validation.js
-    const { existsOrError, notExistsOrError, equalsOrError, validateData } = app.api.validation
+    const { existsOrError, notExistsOrError} = app.api.validation
 
     //Função que retornará a senha do usuario encriptada
     const encryptPassword = (password) => {
@@ -31,12 +30,15 @@ module.exports = app => {
         //ou atualizar um usuario já cadastrado
         const schema = Joi.object({
             name: Joi.string().required().messages({
-                'any.required': 'Nome não inserido'
+                'any.required': 'Nome não inserido',
+                'string.base': 'O campo Nome deve ser uma string.'
             }),
             empresa: Joi.string().required().messages({
+                'string.base': 'O campo Nome da Empresa deve ser uma string.',
                 'any.required': 'Empresa não inserida'
             }),
             cpf: Joi.string().pattern(/^\d{11}$/).required().messages({
+                'string.base': 'O campo CPF deve ser uma string.',
                 'string.pattern.base': 'CPF inválido',
                 'any.required': 'CPF não inserido'
             }),
@@ -45,6 +47,7 @@ module.exports = app => {
                 'any.required': 'Data de nascimento não inserida'
             }),
             telefone: Joi.string().pattern(/^\d{10,11}$/).required().messages({
+                'string.base': 'O campo Telefone deve ser uma string.',
                 'string.pattern.base': 'Telefone inválido',
                 'any.required': 'Telefone não inserido'
             }),
@@ -66,13 +69,13 @@ module.exports = app => {
 
         try {
 
-            const { error, value } = await schema.validateAsync(req.body);
+            const { error} = await schema.validateAsync(req.body);
 
             if (error) {
                 console.error(error.message)
-                throw new Error(error.details.map(detail => detail.message).join(', '));
+                throw new Error(error.message);
             } else {
-                console.log('Dados válidos:', value);
+                // console.log('Dados válidos:', value);
             }
 
             //Faz a encriptação da senha do usuario
@@ -154,8 +157,10 @@ module.exports = app => {
 
             existsOrError(userFromDB, 'E-mail Não Cadastrado')
 
+            console.log(userFromDB)
+
             if (!userFromDB) {
-                res.status(404).json({ error: 'E-mail não cadastrado' })
+                return res.status(404).json({ error: 'E-mail não cadastrado' })
             } else {
                 const token = jwt.sign({ user: user.email },
                     authSecret, { expiresIn: '10m' })
@@ -169,10 +174,7 @@ module.exports = app => {
 
                 const transporter = nodemailer.createTransport({
                     service: 'gmail',
-                    auth: {
-                        user: 'ramonbarrosgomes1@gmail.com',
-                        pass: 'lkctrrzpzainbwcl',
-                    },
+                    auth: emailAuth, 
                 });
 
 
@@ -180,7 +182,7 @@ module.exports = app => {
                     from: "noreplay@gmail.com", // your email
                     to: user.email,
                     subject: "Solicitação de troca de senha",
-                    html: '<p> Click <a href="http://localhost:8080/change-password/' + token + '">' + token + '</a> to reset password<p/>'
+                    html: '<p> Click <a href="http://localhost:80/change-password/' + token + '">' + token + '</a> to reset password<p/>'
 
                     //html:'<p> Click <a href="http://localhost:3000/forgot-password/'+resetLink+'">'+resetLink+'</a> to reset password<p/>'
 
@@ -189,20 +191,22 @@ module.exports = app => {
                     // in the `html` property
                 };
 
-                transporter.sendMail(msg, function (err) {
-                    if (err) return res.status(400).json({
-                        erro: true,
-                        message: "Erro:E-mail não enviado!"
-                    })
-                })
+                try {
+                    const email = await transporter.sendMail(msg);
+                    console.log(email)
+                    res.status(200).send({message:"Email enviado cheque seu email"});
+                } catch (error) {
+                    console.log(error.response)
+                    res.status(500).send("Erro ao enviar Email")
+                }
+                  
 
 
-                res.status(200).json({ message: "Check your email" });
             }
 
-        } catch (msg) {
+        } catch (error) {
             //caso encontre algum erro retorna o status 500 e uma mensagem
-            return res.status(500).send(msg)
+            return res.status(500).send(error.message)
         }
     }
 
@@ -213,7 +217,7 @@ module.exports = app => {
 
         try {
             const decoded = jwt.verify(token, authSecret)
-            console.log(decoded)
+            // console.log(decoded)
             //verifica se já existe um usuario com o Token
             const userFromDB = await app.db('users')
                 .where({ resetLink: token }).first()
@@ -237,7 +241,6 @@ module.exports = app => {
                 .then(_ => res.status(204).json({ message: 'Senha Alterada' }))
                 .catch(err => res.status(500).send(err))
 
-            console.log("vai até o final")
 
         } catch (msg) {
             //caso encontre algum erro retorna o status 500 e uma mensagem
@@ -265,8 +268,6 @@ module.exports = app => {
 
             const response = await axios.request(options);
             const clientId = response.data.id; // Obtendo o campo 'id' da resposta
-
-            console.log(clientId)
 
             // Enviando apenas o campo 'id' na resposta JSON
             return clientId
