@@ -115,10 +115,10 @@ module.exports = app => {
         // .all(app.config.passport.authenticate())
         .get(app.api.order.getByClientId)
         .put(app.api.order.save)
-        .delete(app.api.order.remove)
-
+        
     app.route('/order-update')
         // .all(app.config.passport.authenticate())
+        .delete(app.api.order.remove)
         .put(app.api.order.editOrderStatus)
 
     app.route('/categories/:id/products-cart')
